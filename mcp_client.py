@@ -12,7 +12,7 @@ class MCPClient:
         self.session: Optional[ClientSession] = None
         self.exit_stack = AsyncExitStack()
         self.client = OpenAI(
-            api_key='xxx'
+            api_key=''
         )
         self.conversation_history: List[Dict] = []
         self.current_thought_number = 1
@@ -21,11 +21,11 @@ class MCPClient:
     async def connect_to_server(self):
         """连接到顺序思考MCP服务器"""
         server_params = StdioServerParameters(
-            command='node',
-            args=['/Users/hg/Documents/GitHub/mcp-server-sequential-thinking/dist/index.js'],
+            command='python3',
+            args=['sequential_thinking_server.py'],
             env={
                 'PATH': os.environ.get('PATH', ''),
-                'NODE_ENV': 'production'
+                'PYTHONPATH': os.environ.get('PYTHONPATH', '')
             }
         )
 
