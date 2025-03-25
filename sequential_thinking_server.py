@@ -2,6 +2,7 @@
 
 import json
 import sys
+import asyncio
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Any, Union
 from colorama import init, Fore, Style
@@ -83,7 +84,7 @@ class SequentialThinkingServer:
 │ {thought_data.thought.ljust(max_length + 2)} │
 └{border}┘"""
 
-    def process_thought(self, input_data: Any) -> Dict[str, Any]:
+    async def process_thought(self, input_data: Any) -> Dict[str, Any]:
         """处理思考步骤输入并返回结果"""
         try:
             validated_input = self.validate_thought_data(input_data)
@@ -168,7 +169,7 @@ Key features:
             }
         }
 
-    def handle_request(self, request: str) -> str:
+    async def handle_request(self, request: str) -> str:
         """处理 MCP 请求"""
         try:
             request_data = json.loads(request)
@@ -177,7 +178,7 @@ Key features:
             elif request_data.get("method") == "call_tool":
                 params = request_data.get("params", {})
                 if params.get("name") == "sequentialthinking":
-                    result = self.thinking_server.process_thought(params.get("arguments", {}))
+                    result = await self.thinking_server.process_thought(params.get("arguments", {}))
                     return json.dumps(result)
                 else:
                     return json.dumps({
@@ -204,17 +205,17 @@ Key features:
                 "isError": True
             })
 
-def main():
+async def main():
     """主函数"""
     print("Sequential Thinking MCP Server running on stdio", file=sys.stderr)
     server = MCPServer()
     
     try:
         while True:
-            request = input()
+            request = await asyncio.get_event_loop().run_in_executor(None, input)
             if not request:
                 continue
-            response = server.handle_request(request)
+            response = await server.handle_request(request)
             print(response, flush=True)
     except KeyboardInterrupt:
         print("\nServer shutting down...", file=sys.stderr)
@@ -223,4 +224,4 @@ def main():
         sys.exit(1)
 
 if __name__ == "__main__":
-    main() 
+    asyncio.run(main())
